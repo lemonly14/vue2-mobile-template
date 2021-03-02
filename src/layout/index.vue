@@ -3,16 +3,18 @@
     <div class="main-container">
       <app-main />
     </div>
+    <Tabbar />
   </div>
 </template>
 
 <script>
-import { AppMain } from './components'
+import { AppMain, Tabbar } from './components'
 
 export default {
   name: 'Layout',
   components: {
-    AppMain
+    AppMain,
+    Tabbar
   },
   computed: {
   },

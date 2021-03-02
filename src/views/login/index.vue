@@ -132,7 +132,6 @@ $bg: #283443;
 $light_gray: #fff;
 $cursor: #fff;
 
-/* reset element-ui css */
 .login-container {
   .van-field {
     position: relative;

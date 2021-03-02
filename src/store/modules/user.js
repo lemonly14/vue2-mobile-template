@@ -38,7 +38,8 @@ const actions = {
         const headers = response.headers
         Cookies.set('userId', data.data.userId)
         Cookies.set('roleId', data.data.roleId)
-        commit('SET_NAME', data.userName)
+        console.log('data++++++++++', data)
+        commit('SET_NAME', data.data.trueName)
         commit('SET_TOKEN', headers['x-auth-token'])
         setToken(headers['x-auth-token'])
         resolve()
