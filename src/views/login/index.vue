@@ -1,89 +1,86 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
+    <van-form ref="loginForm"
+              class="login-form">
 
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">尊百福账单查询</h3>
       </div>
 
-      <el-form-item prop="username">
+      <div class="field-container">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
-        <el-input
-          ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
-          name="username"
-          type="text"
-          tabindex="1"
-          auto-complete="on"
-        />
-      </el-form-item>
+        <van-field ref="userName"
+                   v-model="loginForm.userName"
+                   name="用户名"
+                   placeholder="用户名" />
+      </div>
 
-      <el-form-item prop="password">
+      <div class="field-container">
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
-        <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
-          :type="passwordType"
-          placeholder="Password"
-          name="password"
-          tabindex="2"
-          auto-complete="on"
-          @keyup.enter.native="handleLogin"
-        />
-        <span class="show-pwd" @click="showPwd">
-          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-        </span>
-      </el-form-item>
-
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
-
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
+        <van-field :key="passwordType"
+                   ref="password"
+                   v-model="loginForm.password"
+                   :type="passwordType"
+                   name="密码"
+                   placeholder="密码"
+                   :right-icon="passwordType === 'password' ? 'closed-eye' : 'eye-o'"
+                   field-icon-size="28px"
+                   @click-right-icon="showPwd" />
       </div>
+      <div class="verify-code-container">
+        <van-field ref="verifyCode"
+                   v-model="loginForm.verifyCode"
+                   placeholder="验证码"
+                   name="verifyCode"
+                   type="text"
+                   tabindex="3"
+                   auto-complete="on"
+                   @keyup.enter.native="handleLogin">
+          <template #extra>
+            <span class="verify-code">
+              <img :src="verifyCodePic"
+                   @click="onRefresh">
+            </span>
+          </template>
 
-    </el-form>
+        </van-field>
+
+      </div>
+      <van-button :loading="loading"
+                  type="info"
+                  style="width:100%;margin-bottom:30px;"
+                  @click.native.prevent="handleLogin">登录</van-button>
+
+    </van-form>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-
+import { verifyCode } from 'login'
 export default {
   name: 'Login',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        userName: 'root',
+        password: '123456',
+        uuid: '',
+        verifyCode: ''
       },
-      loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
-      },
+      verify: '',
       loading: false,
       passwordType: 'password',
       redirect: undefined
+    }
+  },
+  computed: {
+    verifyCodePic() {
+      const objectUrl = 'data:image/png;base64,' + this.verify
+      return objectUrl
     }
   },
   watch: {
@@ -94,7 +91,15 @@ export default {
       immediate: true
     }
   },
+  mounted() {
+    this.onRefresh()
+  },
   methods: {
+    async onRefresh() {
+      const codeRes = await verifyCode()
+      this.verify = codeRes.data.base64Img
+      this.loginForm.uuid = codeRes.data.uuid
+    },
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -106,19 +111,13 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
+      this.loading = true
+      this.$store.dispatch('user/login', this.loginForm).then(() => {
+        this.$router.push({ path: this.redirect || '/' })
+        this.loading = false
+      }).catch(() => {
+        this.onRefresh()
+        this.loading = false
       })
     }
   }
@@ -129,53 +128,37 @@ export default {
 /* 修复input 背景不协调 和光标变色 */
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
-$bg:#283443;
-$light_gray:#fff;
+$bg: #283443;
+$light_gray: #fff;
 $cursor: #fff;
-
-@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-  .login-container .el-input input {
-    color: $cursor;
-  }
-}
 
 /* reset element-ui css */
 .login-container {
-  .el-input {
+  .van-field {
+    position: relative;
     display: inline-block;
     height: 47px;
     width: 85%;
-
-    input {
-      background: transparent;
-      border: 0px;
-      -webkit-appearance: none;
-      border-radius: 0px;
-      padding: 12px 5px 12px 15px;
+    background: $bg;
+    color: #fff;
+    .van-field__control {
       color: $light_gray;
-      height: 47px;
-      caret-color: $cursor;
-
-      &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: $cursor !important;
-      }
+    }
+    .van-field__right-icon {
+      margin-right: -20px;
+      margin-top: 4px;
     }
   }
-
-  .el-form-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    color: #454545;
+  .van-icon {
+    font-size: 20px;
   }
 }
 </style>
 
 <style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
+$bg: #2d3a4b;
+$dark_gray: #889aa4;
+$light_gray: #eee;
 
 .login-container {
   min-height: 100%;
@@ -203,13 +186,33 @@ $light_gray:#eee;
       }
     }
   }
+  .field-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    color: #454545;
+  }
+
+  .verify-code-container {
+    margin-bottom: 10px;
+    .verify-code {
+      position: absolute;
+      right: 0;
+      bottom: 0px;
+    }
+  }
 
   .svg-container {
-    padding: 6px 5px 6px 15px;
+    /* padding: 6px 5px 6px 15px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     color: $dark_gray;
-    vertical-align: middle;
     width: 30px;
-    display: inline-block;
   }
 
   .title-container {
@@ -226,8 +229,8 @@ $light_gray:#eee;
 
   .show-pwd {
     position: absolute;
-    right: 10px;
-    top: 7px;
+    right: 18px;
+    top: 18px;
     font-size: 16px;
     color: $dark_gray;
     cursor: pointer;

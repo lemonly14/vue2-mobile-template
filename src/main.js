@@ -27,6 +27,16 @@ if (process.env.NODE_ENV === 'production') {
   const { mockXHR } = require('../mock')
   mockXHR()
 }
+// 按需引入Vant
+import {
+  Icon, Button, Form, Field, Notify
+} from 'vant'
+
+Vue.use(Icon)
+Vue.use(Button)
+Vue.use(Form)
+Vue.use(Field)
+Vue.use(Notify)
 
 // set ElementUI lang to EN
 Vue.use(ElementUI, { locale })

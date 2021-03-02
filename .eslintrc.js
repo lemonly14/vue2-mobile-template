@@ -18,10 +18,14 @@ module.exports = {
       "singleline": 10,
       "multiline": {
         "max": 1,
-        "allowFirstLine": false
+        "allowFirstLine": true
       }
     }],
     "vue/singleline-html-element-content-newline": "off",
+    "vue/html-closing-bracket-newline": ["error", {
+      "singleline": "never",
+      "multiline": "never"
+    }],
     "vue/multiline-html-element-content-newline":"off",
     "vue/name-property-casing": ["error", "PascalCase"],
     "vue/no-v-html": "off",

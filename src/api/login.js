@@ -2,23 +2,22 @@ import request from '@/utils/request'
 
 export function login(data) {
   return request({
-    url: '/vue-admin-template/user/login',
+    url: '/v1/account/mobile/login',
     method: 'post',
     data
   })
 }
 
-export function getInfo(token) {
+export function verifyCode(token) {
   return request({
-    url: '/vue-admin-template/user/info',
-    method: 'get',
-    params: { token }
+    url: '/v1/account/verify_code',
+    method: 'post'
   })
 }
 
 export function logout() {
   return request({
-    url: '/vue-admin-template/user/logout',
+    url: '/v1/account/logout',
     method: 'post'
   })
 }
